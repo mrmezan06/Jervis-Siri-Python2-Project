@@ -7,7 +7,7 @@ import os
 
 engine = pyttsx3.init('sapi5')
 voices = engine.getProperty('voices')
-# print(voices[1].id)
+# print(voices)
 engine.setProperty('voice', voices[1].id)
 
 
@@ -51,6 +51,11 @@ def show_result(response):
     speak(response)
 
 
+def exit_app(msg):
+    show_result(msg)
+    exit(0)
+
+
 def browser_open(url):
     chrome_path = 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe %s'
     webbrowser.get(chrome_path).open(url)
@@ -67,27 +72,33 @@ def Action_Perform(query):
         query = query.replace('youtube', '')
         show_result('Search youtube...')
         browser_open('https://www.youtube.com/results?search_query='+query)
+        exit(0)
     elif 'stackoverflow' in query:
         query = query.replace('stackoverflow', '')
         show_result('search stackoverflow...')
         browser_open('https://stackoverflow.com/search?q='+query)
+        exit(0)
     elif 'open facebook' in query:
         show_result('Opening Facebook')
         browser_open('www.facebook.com')
+        exit(0)
     elif 'google' in query:
         query = query.replace('google', '')
         show_result('Searching Google...')
         browser_open('https://www.google.com/search?q='+query)
+        exit(0)
     elif 'play music' in query:
         music_dir = "D:\\Shahid"
         songs = os.listdir(music_dir)
         show_result("Opening music...")
         os.startfile(os.path.join(music_dir, songs[0]))
+        exit_app('Enjoy Music Sir...')
     elif 'play video' in query:
         music_dir = "F:\\Download"
         songs = os.listdir(music_dir)
         show_result("Opening Video...")
         os.startfile(os.path.join(music_dir, songs[0]))
+        exit_app('Enjoy Video Sir...')
     elif 'show time' in query:
         strTime = datetime.datetime.now().strftime("%I:%M:%S %p")
         show_result(strTime)
@@ -97,22 +108,31 @@ def Action_Perform(query):
         # Opening Specific Software
         path = "C:\\Program Files\\qBittorrent\\qbittorrent.exe"
         os.startfile(path)
-    elif 'thank' or 'thanks' or 'thank you' in query:
+    elif 'thanks' in query:
         show_result('Welcome. Sir')
+    elif 'thank you' in query:
+        show_result('Welcome. Sir')
+    elif 'stop' in query:
+        exit_app("Halting the Application Sir...")
+    elif 'terminate' in query:
+        exit_app("Terminating the Application Sir...")
+    elif 'bye' in query:
+        exit_app("Good Bye! Sir")
+    elif 'good night' in query:
+        exit_app('Good Night Darling. Have a nice dream! Bye')
 
 
 if __name__ == '__main__':
     speak("Hello,Sir.")
-    # wishMe()
+    wishMe()
 
-    # task which command execute
+    """ task which command execute """
+    
     while 1:
         query = takeCommand().lower()
-        if 'terminate' in query:
-            show_result("Terminating sir...")
-            break
-        else:
-            Action_Perform(query)
+        Action_Perform(query)
+            
+
 
 
 
