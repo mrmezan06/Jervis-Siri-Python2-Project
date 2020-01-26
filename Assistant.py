@@ -1,10 +1,15 @@
 import datetime
+import geocoder
 import speech_recognition as sr
 import pyttsx3
 import wikipedia
 import webbrowser
 import os
 import psutil
+import requests as rq
+from selenium import webdriver
+import time
+
 
 engine = pyttsx3.init('sapi5')
 voices = engine.getProperty('voices')
@@ -48,7 +53,7 @@ def takeCommand():
 
 
 def show_result(response):
-    print(response)
+    print(response.encode('utf-8').strip())
     speak(response)
 
 
@@ -62,11 +67,54 @@ def browser_open(url):
     webbrowser.get(chrome_path).open(url)
 
 
+def ParseData(data):
+    for dicV in data:
+        # print(data.get(dicV))
+        # print(type(data.get(dicV)))
+        if type(data.get(dicV)) == type(data):
+            ParseData(data.get(dicV))
+        else:
+            show_result(str(dicV)+" : "+str(data.get(dicV)))
+
+
+def getVal():
+        driver = webdriver.Chrome('chromedriver.exe')
+        url = "https://mycurrentlocation.net/"
+        driver.get(url)
+        latEl = driver.find_element_by_xpath('//*[@id="latitude"]')
+        lonEl = driver.find_element_by_xpath('//*[@id="longitude"]')
+
+        """print(latEl.text)
+        print(lonEl.text)"""
+        lat = latEl.text
+        lon = lonEl.text
+        time.sleep(10)
+        driver.quit()
+        return [lat, lon]
+
+
+def getWeather():
+    """g = geocoder.ip('me')
+    lt = g.latlng[0]
+    ln = g.latlng[1]"""
+
+    latlng = getVal()
+    lt = latlng[0]
+    ln = latlng[1]
+
+    appkey = 'e69675ab2396d9a4feedf6b8053f4cea'
+    r = rq.get('http://api.openweathermap.org/data/2.5/weather?lat='+str(lt)+'&lon='+str(ln)+'&appid='+appkey)
+    if r.status_code == 200:
+        data = r.json()
+        # show_result("Searching Weather Information...")
+        ParseData(data)
+
+
 def Action_Perform(query):
     if 'wikipedia' in query:
         show_result('Searching Wikipedia...')
         query = query.replace('wikipedia', '')
-        result = wikipedia.summary(query, sentences=10)
+        result = wikipedia.summary(query, sentences=4)
         show_result('According to wikipedia:')
         show_result(result)
     elif 'youtube' in query:
@@ -113,7 +161,7 @@ def Action_Perform(query):
         # Opening Specific Software
         path = "C:\\Program Files\\qBittorrent\\qbittorrent.exe"
         os.startfile(path)
-        show_result('Opening qBittorent, Sir')
+        show_result('Opening Torrent, Sir')
     elif 'kill torrent' in query:
         for process in (process for process in psutil.process_iter() if process.name() == "qbittorrent.exe"):
             process.kill()
@@ -138,11 +186,13 @@ def Action_Perform(query):
     elif 'kill music' in query:
         for process in (process for process in psutil.process_iter() if process.name() == "AIMP.exe"):
             process.kill()
-            show_result('Killing AIMP, Sir')
+            show_result('Killing Music, Sir')
     elif 'kill chrome' in query:
         for process in (process for process in psutil.process_iter() if process.name() == "chrome.exe"):
             process.kill()
             show_result('Killing Chrome, Sir')
+    elif 'get weather' in query:
+        getWeather()
 
 
 if __name__ == '__main__':
@@ -150,10 +200,21 @@ if __name__ == '__main__':
     wishMe()
 
     """ task which command execute """
+    # Command Option
+    print("Voice Command : 1\n Type Command: 2")
+    a = int(input())
+
+    if a == 1:
+        while 1:
+            query = takeCommand().lower()
+            Action_Perform(query)
+    elif a == 2:
+        while 1:
+            query = str(input("Enter Your Command :"))
+            query = query.lower()
+            Action_Perform(query)
     
-    while 1:
-        query = takeCommand().lower()
-        Action_Perform(query)
+
             
 
 
